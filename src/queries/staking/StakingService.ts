@@ -1,69 +1,95 @@
-// src/queries/stakingService.ts
-
-import type {
-  PendingReward,
-  PreCalculatePendingRewardParams,
-  StakePosition,
-} from "../../types";
+// src/queries/staking/stakingService.ts
 import { defaultSuiClient } from "../../utils/client";
 import { getStakingObjectIds } from "../../utils/config";
 import {
-  _getUserTotalStaked,
   _calculatePendingReward,
-  _queryUserPositionIds,
   _getPositions,
+  _getUserTotalStaked,
+  _queryRewardManager,
+  _queryUserPositionIds,
 } from "./StakingRepository";
 
-const objectIds = getStakingObjectIds("mainnet");
+const obj = getStakingObjectIds("mainnet");
 
-/**
- * Retrieve all stake position IDs for a user.
- */
-export async function getPositionIds(owner: string): Promise<string[] | null> {
-  return _queryUserPositionIds(
-    defaultSuiClient,
-    objectIds.REWARD_MANAGER_ID,
-    owner
-  );
+export interface RewardInfo {
+  coinType: string;
+  pendingReward: bigint;
+}
+
+export interface PositionInfo {
+  positionId: string;
+  staked: bigint;
+  pendingRewards: RewardInfo[];
+}
+
+export interface StakingSummary {
+  totalStaked: bigint;
+  positions: PositionInfo[];
 }
 
 /**
- * Retrieve detailed stake positions for a list of IDs.
- */
-export async function getPositions(
-  positionIds: string[]
-): Promise<StakePosition[] | null> {
-  return _getPositions(defaultSuiClient, positionIds);
-}
-
-/**
- * Get total staked amount for a user.
- */
-export async function getUserTotalStaked(owner: string): Promise<bigint> {
-  return _getUserTotalStaked(
-    defaultSuiClient,
-    objectIds.PROTOCOL_CONFIG_ID,
-    owner
-  );
-}
-
-/**
- * Simulates the calculation of pending rewards for a given staking position and coin type.
+ * Returns a full staking summary for the given wallet:
+ * - total staked amount
+ * - every position (id, staked amount)
+ * - pending rewards for each reward coin configured on‑chain
  *
- * Required in `params`: `position`, `coinType`
- *
- * @param owner - The wallet address to simulate as the sender.
- * @param params - PreCalculatePendingRewardParams
- * @returns List of pending rewards with coin type and amount.
+ * This is **zero‑parameter** for the consumer – they only pass the wallet address.
  */
-export async function calculatePendingReward(
-  owner: string,
-  params: PreCalculatePendingRewardParams
-): Promise<PendingReward[]> {
-  return _calculatePendingReward(
+export async function getStakingSummary(
+  wallet: string
+): Promise<StakingSummary> {
+  // ── 1. Global figures ───────────────────────────────────────────────
+  const rewardManager = await _queryRewardManager(
     defaultSuiClient,
-    owner,
-    params,
-    objectIds.BLUB_STAKING_PACKAGE_ID
+    obj.REWARD_MANAGER_ID
   );
+  const rewardCoins: string[] = rewardManager.rewardCoins; // <- pulled from on‑chain object
+  const totalStaked = await _getUserTotalStaked(
+    defaultSuiClient,
+    obj.PROTOCOL_CONFIG_ID,
+    wallet
+  );
+
+  // ── 2. User positions ───────────────────────────────────────────────
+  const positionIds = await _queryUserPositionIds(
+    defaultSuiClient,
+    obj.REWARD_MANAGER_ID,
+    wallet
+  );
+  if (!positionIds || positionIds.length === 0) {
+    return { totalStaked, positions: [] };
+  }
+
+  const userPositions = await _getPositions(defaultSuiClient, positionIds);
+  if (!userPositions) {
+    return { totalStaked, positions: [] };
+  }
+
+  // ── 3. Pending‑reward matrix (positions × coins) ────────────────────
+  const positionsWithPending: PositionInfo[] = [];
+
+  for (const pos of userPositions) {
+    const pendingRewards: RewardInfo[] = await Promise.all(
+      rewardCoins.map(async (coinType) => {
+        const [reward] = await _calculatePendingReward(
+          defaultSuiClient,
+          wallet,
+          { position: pos.id, coinType },
+          obj.BLUB_STAKING_PACKAGE_ID
+        );
+        return {
+          coinType,
+          pendingReward: reward ? reward.pendingReward : 0n,
+        };
+      })
+    );
+
+    positionsWithPending.push({
+      positionId: pos.id,
+      staked: pos.stakedAmount,
+      pendingRewards,
+    });
+  }
+
+  return { totalStaked, positions: positionsWithPending };
 }

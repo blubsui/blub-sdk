@@ -1,6 +1,6 @@
 {
   "name": "blub-sdk",
-  "version": "2.2.0",
+  "version": "2.3.1",
   "description": "A modular SDK for interacting with the BLUB ecosystem on the Sui blockchain.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,20 +1,25 @@
+import { getStakingSummary } from "../staking/StakingService";
 import { getBlubBalance } from "../token/client";
-import { getUserTotalStaked } from "../staking/StakingService";
 
 /**
- * Fetches the user's wallet and staked balances, and calculates total points.
+ * Multiplier applied to staked BLUB tokens when calculating user points
+ * for the BLUB NFT collection whitelist campaign.
  *
- * Formula:
- *   totalPoints = walletBalance * 1 + stakedBalance * stakeMultiplier
- *
- * @param address - User's wallet address.
- * @returns Total points for the user as a bigint.
+ * Example:
+ *   1 BLUB in wallet  = 1 point
+ *   1 BLUB staked     = 1.6 points (boosted)
  */
+export const BLUB_NFT_COLLECTION_WHITELIST_STAKE_BOOST = 1.6;
+
 export async function getUserBlubNftPoints(address: string): Promise<bigint> {
-  const [walletBalance, stakedBalance] = await Promise.all([
+  const [walletBalance, summary] = await Promise.all([
     getBlubBalance(address),
-    getUserTotalStaked(address),
+    getStakingSummary(address),
   ]);
 
-  return walletBalance + stakedBalance * BigInt(1.6);
+  const stakedBalance = summary.totalStaked;
+  return (
+    walletBalance +
+    stakedBalance * BigInt(BLUB_NFT_COLLECTION_WHITELIST_STAKE_BOOST)
+  );
 }

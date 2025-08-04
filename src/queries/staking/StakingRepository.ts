@@ -167,3 +167,22 @@ export async function _calculatePendingReward(
 
   return pending;
 }
+
+export async function _queryRewardManager(
+  client: SuiClient,
+  rewardManagerId: string
+) {
+  const obj = await client.getObject({
+    id: rewardManagerId,
+    options: { showContent: true },
+  });
+  const fields = getObjectFields(obj);
+  if (!fields) throw new Error("reward‑manager fields is null");
+
+  // Assume on‑chain layout has `reward_coins: vector<..>`
+  const rewardCoins: string[] = fields.reward_coins.map((r: any) => r.name);
+  return {
+    totalStakedAmount: BigInt(fields.total_staked_amount),
+    rewardCoins,
+  };
+}

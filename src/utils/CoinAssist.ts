@@ -198,7 +198,8 @@ export class CoinUtils {
     }
 
     let sum = BigInt(0);
-    const selectedCoins = [];
+    const selectedCoins: CoinAsset[] = [];
+
     const remainingCoins = [...sortedCoins];
     while (sum < total) {
       const target = amount - sum;

@@ -48,3 +48,10 @@ test-results/
 *.tmp
 *.cache/
 *.sh
+s.sh
+
+
+
+v2/
+
+src-legacy/

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { SuiClient } from "@mysten/sui/client";
 import { defaultSuiClient } from "../../utils/client";
 import { BLUB_COINTYPE } from "../../utils/constants";
@@ -31,5 +32,5 @@ async function getCoinBalance(
   }
 
   const coins = await client.getCoins({ owner, coinType });
-  return coins.data.reduce((sum, c) => sum + BigInt(c.balance), 0n);
+  return coins.data.reduce((sum, c) => sum + BigInt(c.balance), BigInt(0));
 }

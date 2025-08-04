@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/queries/stakingRepository.ts
 import { Transaction } from "@mysten/sui/transactions";
 
@@ -11,6 +12,7 @@ import type {
 } from "../../types";
 import { completionCoin, getObjectFields } from "../../utils/sui";
 import { SuiClient } from "@mysten/sui/client";
+import { defaultSuiClient } from "../../utils/client";
 
 /**
  * Fetches all stake position IDs registered for the given user.
@@ -42,9 +44,11 @@ export async function _queryUserPositionIds(
  * Fetches and parses all stake positions for the given IDs.
  */
 export async function _getPositions(
-  client: SuiClient,
-  positionIds: string[]
+  positionIds: string[],
+  client: SuiClient = defaultSuiClient
 ): Promise<StakePosition[]> {
+  //
+
   const resq = await client.multiGetObjects({
     ids: positionIds,
     options: { showContent: true },
@@ -58,6 +62,7 @@ export async function _getPositions(
       throw new Error("fields is null");
     }
     const position = await parseUserPosition(client, fields);
+
     positions.push(position);
   }
 
@@ -125,14 +130,15 @@ export async function _getUserTotalStaked(
     userPositionRecordId,
     wallet
   );
-  if (!positionIds || positionIds.length === 0) return 0n;
 
-  const positions = await _getPositions(client, positionIds);
-  if (!positions || positions.length === 0) return 0n;
+  if (!positionIds || positionIds.length === 0) return BigInt(0);
+
+  const positions = await _getPositions(positionIds);
+  if (!positions || positions.length === 0) return BigInt(0);
 
   return positions.reduce(
-    (total, p) => (p.stakedAmount > 0n ? total + p.stakedAmount : total),
-    0n
+    (total, p) => (p.stakedAmount > BigInt(0) ? total + p.stakedAmount : total),
+    BigInt(0)
   );
 }
 
@@ -141,13 +147,17 @@ export async function _getUserTotalStaked(
  * without executing a real on-chain transaction.
  */
 export async function _calculatePendingReward(
-  client: SuiClient,
   owner: string,
-  params: PreCalculatePendingRewardParams,
-  packageId: string
+  { position, coinType }: PreCalculatePendingRewardParams,
+  packageId: string,
+  client: SuiClient = defaultSuiClient
 ): Promise<PendingReward[]> {
   const builder = new StakingBuilder();
-  const txb = builder.calculatePendingReward(params, new Transaction());
+
+  const txb = builder.calculatePendingReward(
+    { position, coinType },
+    new Transaction()
+  );
 
   const inspection = await client.devInspectTransactionBlock({
     transactionBlock: txb,

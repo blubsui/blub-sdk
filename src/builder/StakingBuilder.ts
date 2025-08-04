@@ -263,6 +263,13 @@ export class StakingBuilder {
     params: PreCalculatePendingRewardParams,
     tx: Transaction = new Transaction()
   ) {
+    //     public fun calculate_pending_reward<R>(
+    //     protocol_config: &ProtocolConfig,
+    //     reward_manager: &RewardManager,
+    //     position: &StakePosition,
+    //     clock: &Clock,
+    // ) {
+
     tx.moveCall({
       target: `${BLUB_STAKING_PACKAGE_ID}::staking::calculate_pending_reward`,
       arguments: [

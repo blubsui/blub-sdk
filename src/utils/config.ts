@@ -23,6 +23,6 @@ export class StakingConfig {
   }
 }
 
-export const getStakingObjectIds = (env: Environment) => {
+export const getStakingObjectIds = (env: Environment = "mainnet") => {
   return env === "mainnet" ? mainnetObjectIds : testnetObjectIds;
 };

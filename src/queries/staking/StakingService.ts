@@ -9,9 +9,9 @@ import { defaultSuiClient } from "../../utils/client";
 import { getStakingObjectIds } from "../../utils/config";
 import {
   _getUserTotalStaked,
-  calculatePendingRewardInternal,
-  queryUserPositionIds,
-  queryUserPositions,
+  _calculatePendingReward,
+  _queryUserPositionIds,
+  _getPositions,
 } from "./StakingRepository";
 
 const objectIds = getStakingObjectIds("mainnet");
@@ -20,7 +20,7 @@ const objectIds = getStakingObjectIds("mainnet");
  * Retrieve all stake position IDs for a user.
  */
 export async function getPositionIds(owner: string): Promise<string[] | null> {
-  return queryUserPositionIds(
+  return _queryUserPositionIds(
     defaultSuiClient,
     objectIds.REWARD_MANAGER_ID,
     owner
@@ -33,7 +33,7 @@ export async function getPositionIds(owner: string): Promise<string[] | null> {
 export async function getPositions(
   positionIds: string[]
 ): Promise<StakePosition[] | null> {
-  return queryUserPositions(defaultSuiClient, positionIds);
+  return _getPositions(defaultSuiClient, positionIds);
 }
 
 /**
@@ -60,7 +60,7 @@ export async function calculatePendingReward(
   owner: string,
   params: PreCalculatePendingRewardParams
 ): Promise<PendingReward[]> {
-  return calculatePendingRewardInternal(
+  return _calculatePendingReward(
     defaultSuiClient,
     owner,
     params,

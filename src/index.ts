@@ -18,3 +18,5 @@ export {
   getBlubCirculatingSupply,
   getBlubTotalSupply,
 } from "./queries/token/stats";
+
+export { getUserBlubNftPoints } from "./queries/nft/points";

@@ -11,9 +11,9 @@ import type {
 } from "../../types";
 
 /**
- * Busca todos os position IDs registrados para o usuário.
+ * Fetches all stake position IDs registered for the given user.
  */
-export async function queryUserPositionIds(
+export async function _queryUserPositionIds(
   client: SuiClient,
   userPositionRecordId: string,
   wallet: string
@@ -37,9 +37,9 @@ export async function queryUserPositionIds(
 }
 
 /**
- * Busca e parseia todas as posições detalhadas de stake.
+ * Fetches and parses all stake positions for the given IDs.
  */
-export async function queryUserPositions(
+export async function _getPositions(
   client: SuiClient,
   positionIds: string[]
 ): Promise<StakePosition[]> {
@@ -63,7 +63,7 @@ export async function queryUserPositions(
 }
 
 /**
- * Parser de uma posição individual.
+ * Parses a single stake position object into a StakePosition structure.
  */
 export async function parseUserPosition(
   client: SuiClient,
@@ -111,21 +111,21 @@ export async function parseUserPosition(
 }
 
 /**
- * Soma o valor total staked de todas as posições do usuário.
+ * Calculates the total staked amount across all user positions.
  */
 export async function _getUserTotalStaked(
   client: SuiClient,
   userPositionRecordId: string,
   wallet: string
 ): Promise<bigint> {
-  const positionIds = await queryUserPositionIds(
+  const positionIds = await _queryUserPositionIds(
     client,
     userPositionRecordId,
     wallet
   );
   if (!positionIds || positionIds.length === 0) return 0n;
 
-  const positions = await queryUserPositions(client, positionIds);
+  const positions = await _getPositions(client, positionIds);
   if (!positions || positions.length === 0) return 0n;
 
   return positions.reduce(
@@ -135,9 +135,10 @@ export async function _getUserTotalStaked(
 }
 
 /**
- * Simula os eventos de reward para uma posição sem executar transação real.
+ * Simulates a reward calculation for a position using `devInspectTransactionBlock`,
+ * without executing a real on-chain transaction.
  */
-export async function calculatePendingRewardInternal(
+export async function _calculatePendingReward(
   client: SuiClient,
   owner: string,
   params: PreCalculatePendingRewardParams,

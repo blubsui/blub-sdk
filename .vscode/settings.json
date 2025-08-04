@@ -1,0 +1,19 @@
+// .vscode/settings.json
+{
+    // Usa o Prettier como formatador padrão
+    "editor.defaultFormatter": "esbenp.prettier-vscode", 
+  
+    // Formata automaticamente ao salvar
+    "editor.formatOnSave": true, 
+  
+    // Executa codeActions (ESLint fix) ao salvar
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit"
+    },
+  
+    // Se você estiver usando "eslint" como formatador, pode precisar disto:
+    // "eslint.format.enable": true,
+    // "eslint.alwaysShowStatus": true,
+    // "eslint.run": "onSave"
+  }
+  

@@ -1,14 +1,16 @@
 // src/queries/stakingRepository.ts
-
-import type { SuiClient } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
-import { getObjectFields } from "../../utils/sui";
+
 import { StakingBuilder } from "../../builder/StakingBuilder";
 import type {
   StakePosition,
   PendingReward,
   PreCalculatePendingRewardParams,
+  RewardInfo,
+  RewardManager,
 } from "../../types";
+import { completionCoin, getObjectFields } from "../../utils/sui";
+import { SuiClient } from "@mysten/sui/client";
 
 /**
  * Fetches all stake position IDs registered for the given user.
@@ -168,21 +170,50 @@ export async function _calculatePendingReward(
   return pending;
 }
 
-export async function _queryRewardManager(
+export async function queryRewardManager(
   client: SuiClient,
   rewardManagerId: string
-) {
-  const obj = await client.getObject({
+): Promise<RewardManager | null> {
+  const resq = await client.getObject({
     id: rewardManagerId,
     options: { showContent: true },
   });
-  const fields = getObjectFields(obj);
-  if (!fields) throw new Error("reward‑manager fields is null");
+  const fields = getObjectFields(resq);
+  if (!fields) throw new Error("fields is null");
 
-  // Assume on‑chain layout has `reward_coins: vector<..>`
-  const rewardCoins: string[] = fields.reward_coins.map((r: any) => r.name);
+  const rewardsInfos = new Map<string, RewardInfo>();
+  const contents = fields.rewards_infos?.fields?.contents ?? [];
+  contents.forEach((item: any) => {
+    const rewardCoinType = completionCoin(item.fields.key.fields.name);
+    const rewardInfo = parseRewardInfo(item.fields.value.fields);
+    rewardsInfos.set(rewardCoinType, rewardInfo);
+  });
+
   return {
+    id: rewardManagerId,
     totalStakedAmount: BigInt(fields.total_staked_amount),
-    rewardCoins,
+    rewardsInfos,
+    userPositionsRecordId: fields.user_positions_record.fields.id.id,
   };
+}
+
+function parseRewardInfo(fields: any): RewardInfo {
+  const rewardInfo: RewardInfo = {
+    rewardCoinType: completionCoin(fields.reward_coin_type.fields.name),
+    accRewardPerShare: BigInt(fields.acc_reward_per_share),
+    lastRewardTime: BigInt(fields.last_reward_time),
+  };
+  return rewardInfo;
+}
+
+export async function queryRewardInfo(
+  client: SuiClient,
+  rewardManagerId: string,
+  rewardCoinType: string
+): Promise<RewardInfo | null> {
+  const rewardManager = await queryRewardManager(client, rewardManagerId);
+  if (!rewardManager) {
+    return null;
+  }
+  return rewardManager.rewardsInfos.get(completionCoin(rewardCoinType)) ?? null;
 }

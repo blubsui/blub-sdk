@@ -10,15 +10,15 @@ export { StakingBuilder } from "./builder/StakingBuilder";
 // ─────────────────────────────────────────────────────────────
 export * as StakingService from "./queries/staking/StakingService";
 
-// ─────────────────────────────────────────────────────────────
-// Token utils
-// ─────────────────────────────────────────────────────────────
+// src/queries/token/index.ts
+
 export { getBlubBalance } from "./queries/token/client";
 export {
   getBlubCirculatingSupply,
   getBlubTotalSupply,
 } from "./queries/token/stats";
+export { getBlubPrice, getSuiPrice } from "./queries/token/prices";
 
-export { getUserBlubNftPoints } from "./queries/nft/points";
+export * from "./queries/nft/points";
 
 export * from "./hooks";

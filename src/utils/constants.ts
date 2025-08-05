@@ -12,7 +12,7 @@ export interface BlubStakingObjectsIds {
 export const BLUB_COINTYPE =
   "0xfa7ac3951fdca92c5200d468d31a365eb03b2be9936fde615e69f0c1274ad3a0::BLUB::BLUB";
 
-export const testnetObjectIds: BlubStakingObjectsIds = {
+export const testnetStakingObjectIDs: BlubStakingObjectsIds = {
   BLUB_STAKING_PACKAGE_ID:
     "0x586afd26578f6700409cd7e9a5bc59428f762c122a6076cfa220e5799fbb03e6",
   ADMIN_CAP_ID:
@@ -25,7 +25,7 @@ export const testnetObjectIds: BlubStakingObjectsIds = {
     "0x7bc2d3ce12315d0a7653d2dd844a954fbcb0f02d6a10132165ccb8b5f8581f5c",
 };
 
-export const mainnetObjectIds: BlubStakingObjectsIds = {
+export const mainnetStakingObjectIDs: BlubStakingObjectsIds = {
   BLUB_STAKING_PACKAGE_ID:
     "0xd683b30a655b25c49184002a4668e0f603e862598e9d57ae2ffbfdc8507155df",
   ADMIN_CAP_ID:

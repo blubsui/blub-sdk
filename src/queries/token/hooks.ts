@@ -1,5 +1,6 @@
 import useSWR from "swr";
 import { getBlubBalance } from "./client";
+import { getBlubPrice, getSuiPrice } from "./prices";
 import { getBlubCirculatingSupply, getBlubTotalSupply } from "./stats";
 
 /**
@@ -13,7 +14,8 @@ export function useBlubBalance(address?: string) {
 
   const { data, error, isLoading } = useSWR(
     shouldFetch ? ["blubBalance", address] : null,
-    () => getBlubBalance(address!)
+    () => getBlubBalance(address!),
+    { refreshInterval: 30_000 }
   );
 
   return {
@@ -51,6 +53,32 @@ export function useBlubTotalSupply() {
 
   return {
     totalSupply: data,
+    error,
+  };
+}
+
+/**
+ * Hook to fetch the current BLUB price in USD.
+ */
+export function useBlubPrice() {
+  const { data, error, isLoading } = useSWR("blubPrice", getBlubPrice);
+
+  return {
+    price: data,
+    isLoading,
+    error,
+  };
+}
+
+/**
+ * Hook to fetch the current SUI price in USD.
+ */
+export function useSuiPrice() {
+  const { data, error, isLoading } = useSWR("suiPrice", getSuiPrice);
+
+  return {
+    price: data,
+    isLoading,
     error,
   };
 }

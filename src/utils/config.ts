@@ -1,7 +1,7 @@
 // src/utils/config.ts
 
 import type { Environment } from "../types";
-import { mainnetObjectIds, testnetObjectIds } from "./constants";
+import { mainnetStakingObjectIDs, testnetStakingObjectIDs } from "./constants";
 
 export const GAS_BUDGET = 0.5 * 500_000_000;
 
@@ -13,7 +13,8 @@ export class StakingConfig {
   readonly VAULT_ID: string;
 
   constructor(env: Environment) {
-    const ids = env === "mainnet" ? mainnetObjectIds : testnetObjectIds;
+    const ids =
+      env === "mainnet" ? mainnetStakingObjectIDs : testnetStakingObjectIDs;
 
     this.BLUB_STAKING_PACKAGE_ID = ids.BLUB_STAKING_PACKAGE_ID;
     this.ADMIN_CAP_ID = ids.ADMIN_CAP_ID;
@@ -24,5 +25,5 @@ export class StakingConfig {
 }
 
 export const getStakingObjectIds = (env: Environment = "mainnet") => {
-  return env === "mainnet" ? mainnetObjectIds : testnetObjectIds;
+  return env === "mainnet" ? mainnetStakingObjectIDs : testnetStakingObjectIDs;
 };

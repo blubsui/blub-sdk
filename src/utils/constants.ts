@@ -12,6 +12,8 @@ export interface BlubStakingObjectsIds {
 export const BLUB_COINTYPE =
   "0xfa7ac3951fdca92c5200d468d31a365eb03b2be9936fde615e69f0c1274ad3a0::BLUB::BLUB";
 
+export const BLUB_DECIMALS = 2;
+
 export const testnetStakingObjectIDs: BlubStakingObjectsIds = {
   BLUB_STAKING_PACKAGE_ID:
     "0x586afd26578f6700409cd7e9a5bc59428f762c122a6076cfa220e5799fbb03e6",

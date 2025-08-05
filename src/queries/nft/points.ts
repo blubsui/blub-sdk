@@ -1,16 +1,8 @@
+import { BLUB_DECIMALS } from "../../utils/constants";
 import { getStakingSummary } from "../staking/StakingService";
 import { getBlubBalance } from "../token/client";
 
-/**
- * Multiplier applied to staked BLUB tokens when calculating user points
- * for the BLUB NFT collection whitelist campaign.
- *
- * Example:
- *   1 BLUB in wallet  = 1 point
- *   1 BLUB staked     = 1.6 points (boosted)
- */
 export const BLUB_NFT_COLLECTION_WHITELIST_STAKE_BOOST = 1.6;
-const BLUB_DECIMALS = 2;
 
 export interface UserBlubNftPointsResult {
   balance: number;
@@ -24,11 +16,10 @@ export async function getUserBlubNftPoints(
 ): Promise<UserBlubNftPointsResult> {
   const [walletBalanceRaw, summary] = await Promise.all([
     getBlubBalance(address),
-    getStakingSummary(address),
+    safeGetStakingSummary(address),
   ]);
 
   const stakedRaw = summary.totalStaked;
-
   const balance = Number(walletBalanceRaw) / 10 ** BLUB_DECIMALS;
   const staked = Number(stakedRaw) / 10 ** BLUB_DECIMALS;
 
@@ -38,6 +29,20 @@ export async function getUserBlubNftPoints(
     balance,
     staked,
     stakeBoost: BLUB_NFT_COLLECTION_WHITELIST_STAKE_BOOST,
-    points: points / 1_000_000_000,
+    points,
   };
+}
+
+// helper: retorna zero em caso de erro
+async function safeGetStakingSummary(
+  address: string
+): Promise<{ totalStaked: bigint }> {
+  try {
+    return await getStakingSummary(address);
+  } catch (err) {
+    console.warn(
+      `[getUserBlubNftPoints] No staking found for ${address}, defaulting to 0.`
+    );
+    return { totalStaked: 0n };
+  }
 }

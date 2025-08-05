@@ -12,6 +12,13 @@ export * as StakingService from "./queries/staking/StakingService";
 
 // src/queries/token/index.ts
 
+export {
+  BLUB_COINTYPE,
+  BLUB_DECIMALS,
+  mainnetStakingObjectIDs,
+  testnetStakingObjectIDs,
+} from "./utils/constants";
+
 export { getBlubBalance } from "./queries/token/client";
 export {
   getBlubCirculatingSupply,

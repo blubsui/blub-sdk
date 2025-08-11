@@ -33,7 +33,6 @@ export async function getUserBlubNftPoints(
   };
 }
 
-// helper: retorna zero em caso de erro
 async function safeGetStakingSummary(
   address: string
 ): Promise<{ totalStaked: bigint }> {

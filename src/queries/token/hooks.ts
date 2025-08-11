@@ -2,6 +2,7 @@ import useSWR from "swr";
 import { getBlubBalance } from "./client";
 import { getBlubPrice, getSuiPrice } from "./prices";
 import { getBlubCirculatingSupply, getBlubTotalSupply } from "./stats";
+import { getBlubMarketCap } from "./marketcap";
 
 /**
  * Hook to fetch the BLUB token balance for a given wallet address.
@@ -78,6 +79,19 @@ export function useSuiPrice() {
 
   return {
     price: data,
+    isLoading,
+    error,
+  };
+}
+
+/**
+ * Hook to fetch the current BLUB market cap in USD.
+ */
+export function useBlubMarketCap() {
+  const { data, error, isLoading } = useSWR("blubMarketCap", getBlubMarketCap);
+
+  return {
+    marketCap: data,
     isLoading,
     error,
   };
